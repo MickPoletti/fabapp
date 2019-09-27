@@ -174,6 +174,13 @@ function get_selections($table) {
 
 ?>
 
+<style>
+    .container {
+        width: 50%;
+        height: 50%;
+    }
+</style>
+
 <title><?php echo $sv['site_name'];?> Data Reports</title>
 <div id="page-wrapper">
 	<div class="row">
@@ -410,6 +417,7 @@ function get_selections($table) {
 				</form>
 			</div>
 		</div>
+		
 
 	<!---------------------------------- Query Data Area ---------------------------------->
 		<?php if(isset($data)) { ?>
@@ -438,6 +446,19 @@ function get_selections($table) {
 							</tr>
 						</table>
 					</div>
+					<div style='padding:16px;'>
+						<body>
+
+    					<button class="btn btn-default" onclick='renderChart("<?php echo $data['pie'] ?>")'>
+					        Render
+    					</button>
+        				<canvas id="myChart"></canvas>
+        				</body>	
+        				<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.js"></script>
+						<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script> 
+					</div>
+					
+					
 					<div style='padding:16px;'>
 						<table id='query_table' class='table col-md-12'>
 							<thead>
@@ -470,7 +491,6 @@ function get_selections($table) {
 		<?php } ?>
 	</div>
 </div>
-
 
 <?php include_once ($_SERVER['DOCUMENT_ROOT'].'/pages/footer.php'); ?>
 
@@ -589,7 +609,55 @@ function get_selections($table) {
 		document.getElementById('download').click();
 	}
 
+	function renderChart(data) {
+    	console.log(data);
+    	var labels = [];
+    	var ctx = document.getElementById("myChart").getContext('2d');
+    	data = data.split(';');
+    	console.log(data);
+    	for (var i = 0; i < data.length; i++) {
+            labels[i] = data[i].substr(0 ,data[i].indexOf(','));
+        }
+        console.log(data);
+    	for (var i = 0; i < data.length; i++) {
+            data[i] = data[i].substr(data[i].indexOf(',')+1);
 
+        }
+       	//data = data.split(',');
+       	console.log(data);
+    	console.log(labels);
+    	var myChart = new Chart(ctx, {
+        	type: 'pie',
+        	data: {
+            	labels: labels,
+            	datasets: [{
+                	label: 'Data Visualized',
+                	data: data,
+                	borderColor: 'rgba(104, 104, 241, 0.1)', 
+                	backgroundColor: ['rgb(255, 99, 132)','rgb(0, 255, 0)','rgb(128, 255, 0)','rgb(0, 255, 255)','rgb(255, 255, 0)','rgb(255, 255, 128)']
+            	}]
+        	},
+        	options: {            
+            	title: {
+            		display: true,
+            		text: 'Chart Title Will Go Here'
+            	}
+        	}
+        	/*
+        	options: {            
+            	scales: {
+                	yAxes: [{
+                    	ticks: {
+                        	beginAtZero: true,
+                        	callback: function(value, index, values) {
+                            	return float2dollar(value);
+                        	}
+                    	}
+                	}]                
+            	}
+        	},*/
+    	});
+	}
 
 // ———————————— Query Builder ————————————
 
