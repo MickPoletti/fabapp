@@ -454,8 +454,9 @@ function get_selections($table) {
     					</button>
         				<canvas id="myChart"></canvas>
         				</body>	
+        				<!-- check library for external calls -->
         				<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.js"></script>
-						<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script> 
+						<!-- <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>  -->
 					</div>
 					
 					
@@ -608,35 +609,43 @@ function get_selections($table) {
 		document.getElementById('download').download = filename;
 		document.getElementById('download').click();
 	}
-
+	/* Notes on potential features to be added later */
+	// At a glance for admins?
+	//Add popup functionality
+	// click on legend and it highlights row of table
+	// pie clock for percent done 
+	// trend chart
+	// employee and devices with most tickets for leaderboard
+	// drop down for laederboard
+	// leads can see how many printers are out of service vs yelloow vs green 
+	// staff id on dashbaord add extra column
+	// tooltips for hiding visualization portions
 	function renderChart(data) {
-    	console.log(data);
-    	var labels = [];
-    	var ctx = document.getElementById("myChart").getContext('2d');
-    	data = data.split(';');
-    	console.log(data);
+    	var labels = []; // the labels the pie chart
+    	var ctx = document.getElementById("myChart").getContext('2d'); //finds the element in the html to send this to
+    	data = data.split(';'); // splitting the data into readable chunks in an array
     	for (var i = 0; i < data.length; i++) {
             labels[i] = data[i].substr(0 ,data[i].indexOf(','));
-        }
+        } // loop to set label portion of data (everything before the comma)
         console.log(data);
     	for (var i = 0; i < data.length; i++) {
             data[i] = data[i].substr(data[i].indexOf(',')+1);
-
+            // loop to set data portion of in take (everything after the comma)
         }
-       	//data = data.split(',');
-       	console.log(data);
-    	console.log(labels);
+       	// Data structure readable by chart.js
     	var myChart = new Chart(ctx, {
-        	type: 'pie',
+        	type: 'doughnut', // this is the type of chart we wish to display
         	data: {
+        		// these are the visual data types that chart.js will use to construct our data
             	labels: labels,
             	datasets: [{
                 	label: 'Data Visualized',
                 	data: data,
                 	borderColor: 'rgba(104, 104, 241, 0.1)', 
-                	backgroundColor: ['rgb(255, 99, 132)','rgb(0, 255, 0)','rgb(128, 255, 0)','rgb(0, 255, 255)','rgb(255, 255, 0)','rgb(255, 255, 128)']
+                	backgroundColor: ['rgb(255, 99, 132)','rgb(0, 255, 0)','rgb(128, 255, 0)','rgb(0, 255, 255)','rgb(255, 255, 0)','rgb(255, 255, 128)'] // an array of colors
+                	// for chart.js to choose from to display each data point
             	}]
-        	},
+        	}, // Just a title option
         	options: {            
             	title: {
             		display: true,
