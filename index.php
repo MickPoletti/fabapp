@@ -229,7 +229,7 @@ function advanceNum($i, $str){
                 </div>
             </div>
             <!-- /.col-md-8 -->
-            <?php if ($staff && ($staff->getRoleID() >= $sv['LvlOfStaff'])) { ?>
+            <?php if ($staff && ($staff->getRoleID() >= $sv['LvlOfStaff'])) { ?>   
                 <div class="col-md-4">
                     <div class="panel panel-default">
                         <div class="panel-heading">
@@ -287,8 +287,51 @@ function advanceNum($i, $str){
         </div>
         <!-- /.row -->
     <?php } ?>
+
     <div class="row">
         <div class="col-md-8">
+            <!--Drop down menu, instead of doing "style="margin-left:475px;" we can do align="center" just doesn't look as nice imo--> 
+            <?php if ($staff) { ?>
+                <?php
+                include_once("connections/db_connect8.php");
+                
+                $resultSet = $mysqli->query("SELECT operator, r_id FROM users LIMIT 5") or die("database error:". mysqli_error($conn));
+                ?>
+                    <table style="margin-left:470px, table-layout: fixed;">
+                        <tr>
+                            <td class='col-md-6'>
+                                <select>
+                                    <option disabled selected hidden>Select time</option>
+                                    <option value='pastHour'>Past hour</option>
+                                    <option value='pastDay'>Past 24 hours</option>
+                                    <option value='pastWeek'>Past week</option>
+                                    <option value='pastMonth'>Past month</option>
+                                    <option value='pastThreeMonth'>Past 3 months</option>
+                                    <option value='pastSixMonth'>Past 6 months</option>
+                                    <option value='pastYear'>Past Year</option>
+                                </select>
+                            </td>
+                    </table>
+                    
+                    <br>
+                    <div class="container" style="table-layout: fixed;">
+                        <table class="table table-striped table-bordered table-hover" style="table-layout: fixed; width: 70%;">
+                            <tr>
+                                <th>Employee Name</th>
+                                <th>Tickets</th>
+                            </tr>
+                            <tr>
+                                <?php while( $users = mysqli_fetch_assoc($resultSet) ) { ?>
+                                        <tr id="<?php echo $users ['operator']; ?>">
+                                        <td><?php echo $users ['operator']; ?></td>
+                                        <td><?php echo $users ['r_id']; ?></td>
+                                                                                        
+                            </tr>
+                            <?php } ?>
+                            
+                        </table>
+                    </div>
+                    <?php } ?>
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <i class="fas fa-cubes fa-lg"></i> Device Status
