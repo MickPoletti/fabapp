@@ -291,7 +291,7 @@ function advanceNum($i, $str){
     <div class="row">
         <div class="col-md-8">
             <!--Drop down menu, instead of doing "style="margin-left:475px;" we can do align="center" just doesn't look as nice imo-->
-            <?php if ($staff) { ?>
+            <?php if ($staff && $staff->getRoleID() >= 10) { ?>
                 <style>
                 #btn1 {
                     display: block;
