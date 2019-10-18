@@ -1,5 +1,4 @@
 <?php
-
 /**********************************************************
 *
 *	@author MPZinke on 03.12.19
@@ -13,31 +12,24 @@
 *	 specific
 *
 **********************************************************/
-
 include_once ($_SERVER['DOCUMENT_ROOT'].'/pages/header.php');
-
 // staff clearance
 if (!$staff || $staff->getRoleID() < $sv['minRoleTrainer']){
 	// Not Authorized to see this Page
 	header('Location: /index.php');
 	$_SESSION['error_msg'] = "Insufficient role level to access, You must be a Trainer.";
 }
-
 // fire off modal & timer
 if($_SESSION['type'] == 'success'){
 	echo "<script type='text/javascript'> window.onload = function(){success()}</script>";
 }
-
-
 // prebuilt queries
 if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['prebuilt_button'])) {
 	$function = htmlspecialchars(filter_input(INPUT_POST, "static_queries"));
 	$start = htmlspecialchars(filter_input(INPUT_POST, "start_time"));
 	$end = htmlspecialchars(filter_input(INPUT_POST, "end_time"));
 	$device = htmlspecialchars(filter_input(INPUT_POST, "device"));
-
 	$params = Table::get_prebuild_data($end, $function, $start);
-
 	// prepare if specific device wanted by adding AND condition infront of GROUP BY
 	if($function !== "byStation" && $device !== "*") {
 		$statement = "AND `d_id` = '".$device."' ";
@@ -55,7 +47,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['prebuilt_button'])) {
 	&& $params["file_name"] != "FabLab_IDTs")
 		$data['pie'] = create_pie_chart($params["head"], $params["statement"]);
 	else $data['pie'] = NULL;
-
 }
 // custom query
 elseif($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit_custom_query'])) {
@@ -80,21 +71,16 @@ elseif($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit_custom_query
 	$query = ($conditions ? $query."WHERE ".$conditions." " : $query);
 	$query = ($group_by ? $query."GROUP BY ".$group_by." " : $query);
 	$query = ($order_by ? $query."ORDER BY ".$order_by : $query);
-
 	$data['file_name'] = "FabLab_DataReport";
 	$data['results'] = query_results($query);
 	$data['head'] = $data['results'] ? array_keys($data['results'][0]) : NULL;
 	$data['query'] = $query;
 	$data['tsv'] = tsv($head, $query);
 	$data['pie'] = NULL;
-
 }
-
-
 // return tsv string to print into excel sheet
 function tsv($head, $statement) {
 	global $mysqli;
-
 	if($results = $mysqli->query($statement)) {
 		$values = implode("\\t", $head)."\\n";
 		while($row = $results->fetch_assoc())
@@ -102,11 +88,9 @@ function tsv($head, $statement) {
 		return $values;
 	}
 }
-
 // return an array of the results of a query
 function query_results($statement) {
 	global $mysqli;
-
 	if($results = $mysqli->query($statement)) {
 		$values = array();
 		while($row = $results->fetch_assoc())
@@ -114,64 +98,46 @@ function query_results($statement) {
 		return $values;
 	}
 }
-
 // -————————————  PREBUILD QUERY ————————————— 
 // 	-Get fields, sort values, inject JS function call at bottom of page
-
-
 function create_pie_chart($head, $statement) {
 	global $mysqli;
-
 	if($results = $mysqli->query($statement)) {
 		// convert results into array
 		$values = array();
 		while($row = $results->fetch_assoc())
 			$values[$row[$head[0]]] = $row[$head[1]];
-
 		$sum = array_sum($values);
-
 		// get proportionality of each value for each key
 		$slices = array();
 		foreach($values as $key => $value)
-			$slices[] = "$key,".strval($value / $sum);
-
+			$slices[] = "$key,".strval($value);
 		return implode(";", $slices);
 	}	
 }
-
-
 // -————————————  CUSTOM QUERY —————————————— 
-
 $tables = Table::get_tables();
-
 function get_conditions() {
 	$count = 1;
 	$values = array();
-
 	while($count < 100) {
 		$condition = filter_input(INPUT_POST, "conditions-".$count);
 		$operator = filter_input(INPUT_POST, "operator-".$count);
 		$comparison = "'".filter_input(INPUT_POST, "comparison-".$count++)."'";
-
 		if(!$condition  || $condition == "—COLUMN—") return $values;  // 100 to failsafe
 		$condition = explode('|', $condition)[0];
 		$values[] = implode(' ', array($condition, $operator, $comparison));
 	}
 }
-
-
 function get_selections($table) {
 	$count = 1;
 	$values = array();
-
 	while($count < 100) {
 		$column = filter_input(INPUT_POST, "tag-$table-".$count++);
-
 		if(!$column) return $values;
 		$values[] = explode('|', $column)[0];
 	}
 }
-
 ?>
 
 <style>
@@ -221,6 +187,7 @@ function get_selections($table) {
 									<option value='byAccount'>Tickets by Account</option>
 									<option value='IDTs'>IDT Tickets</option>
 								</select>
+								<?php $selected_val = (isset($_POST['static_queries']) ? $_POST['static_queries']: null);  ?>
 							</td>
 							<td class='col-md-2'>
 								<button name='prebuilt_button' id='prebuilt_button' class='btn btn-default' style='width:80%;' disabled>Get Query</button> 
@@ -448,8 +415,8 @@ function get_selections($table) {
 					</div>
 					<div style='padding:16px;'>
 						<body>
-
-    					<button class="btn btn-default" onclick='renderChart("<?php echo $data['pie'] ?>")'>
+						
+    					<button class="btn btn-default" onclick='renderChart("<?php echo $data['pie'] ?>","<?php echo $selected_val ?>")'>
 					        Render
     					</button>
         				<canvas id="myChart"></canvas>
@@ -458,8 +425,7 @@ function get_selections($table) {
         				<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.js"></script>
 						<!-- <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>  -->
 					</div>
-					
-					
+				
 					<div style='padding:16px;'>
 						<table id='query_table' class='table col-md-12'>
 							<thead>
@@ -497,7 +463,6 @@ function get_selections($table) {
 
 <script>
 	$("#query_table").DataTable();
-
 	// used once query type is selected to display time & checkbox & hide/show devices inputs
 	function showQueryContent(element) {
 		var option = element.value;
@@ -506,13 +471,10 @@ function get_selections($table) {
 		if(option == "byStation")
 			document.getElementById('devices').classList.add("hidden");
 	}
-
-
 	// check if input is populated to enable the submit button
 	function prebuilt_populated() {
 		var start = document.getElementById("prebuild_start").value;
 		var end = document.getElementById("prebuild_end").value;
-
 		// disable button if fields not populated
 		if(!start.match(/(\d{4})-(\d{2})-(\d{2})/) || !end.match(/(\d{4})-(\d{2})-(\d{2})/)) {
 			document.getElementById("prebuilt_button").disabled = true;
@@ -521,14 +483,10 @@ function get_selections($table) {
 			document.getElementById("prebuilt_button").disabled = false;
 		}
 	}
-
-
 	function results_button_text(element) {
 		if(element.innerHTML == "Hide Query") element.innerHTML = "Show Query";
 		else element.innerHTML = "Hide Query";
 	}
-
-
 	function exportTableToExcel(tsv, filename = ''){
 		var downloadLink;
 		var dataType = 'application/vnd.ms-excel';
@@ -558,10 +516,7 @@ function get_selections($table) {
 				downloadLink.click();
 		}
 	}
-
-
 // ————————————— Pie Chart —————————————
-
 	function create_wedge(canvas, color, start, stop, text, pos_x, pos_y) {
 		if (canvas.getContext) {
 			var ctx = canvas.getContext('2d'); 
@@ -577,13 +532,10 @@ function get_selections($table) {
 			ctx.fillText(text, pos_x+50, pos_y);
 		}
 	}
-
-
 	 function download_piechart(element) {
 		var image = document.getElementById('piechart').toDataURL('image/png');
 		element.href = image;
 	}
-
 	function create_pie_chart(data, filename) {
 		console.log(data);
 		var canvas = document.getElementById('piechart');
@@ -620,8 +572,9 @@ function get_selections($table) {
 	// leads can see how many printers are out of service vs yelloow vs green 
 	// staff id on dashbaord add extra column
 	// tooltips for hiding visualization portions
-	function renderChart(data) {
+	function renderChart(data, name) {
     	var labels = []; // the labels the pie chart
+    	var backgroundColor = [];
     	var ctx = document.getElementById("myChart").getContext('2d'); //finds the element in the html to send this to
     	data = data.split(';'); // splitting the data into readable chunks in an array
     	for (var i = 0; i < data.length; i++) {
@@ -632,6 +585,24 @@ function get_selections($table) {
             data[i] = data[i].substr(data[i].indexOf(',')+1);
             // loop to set data portion of in take (everything after the comma)
         }
+        for (var i = 0; i<50; i++)
+        {
+        	var red = Math.floor(Math.random() * (255)); // random red color value
+        	var green = Math.floor(Math.random() * (255)); // randome= green color calue
+        	var blue = Math.floor(Math.random() * (255)); // random blue color value
+        	backgroundColor[i] = 'rgba('+red+', '+green+', '+blue+', '+0.3+')'; //concat into array that can be read by chart.js
+        }
+        if(name.includes('by'))
+        {
+        	name = name.split('by')[1];
+        	name = "Tickets by " + name;
+        }
+        else if(name.includes('failed'))
+        {
+        	name = name.split('failed')[1];
+        	name = "Failed " + name;
+        }
+
        	// Data structure readable by chart.js
     	var myChart = new Chart(ctx, {
         	type: 'doughnut', // this is the type of chart we wish to display
@@ -642,14 +613,14 @@ function get_selections($table) {
                 	label: 'Data Visualized',
                 	data: data,
                 	borderColor: 'rgba(104, 104, 241, 0.1)', 
-                	backgroundColor: ['rgb(255, 99, 132)','rgb(0, 255, 0)','rgb(128, 255, 0)','rgb(0, 255, 255)','rgb(255, 255, 0)','rgb(255, 255, 128)'] // an array of colors
+                	backgroundColor: backgroundColor// an array of colors
                 	// for chart.js to choose from to display each data point
             	}]
         	}, // Just a title option
         	options: {            
             	title: {
             		display: true,
-            		text: 'Chart Title Will Go Here'
+            		text: name
             	}
         	}
         	/*
@@ -667,10 +638,7 @@ function get_selections($table) {
         	},*/
     	});
 	}
-
 // ———————————— Query Builder ————————————
-
-
 	// AJAX for getting the names of columns from selected table
 	function getTableCols(element, table){
 		var table_choice = element.value;
@@ -679,7 +647,6 @@ function get_selections($table) {
 		var attributes2 = document.getElementById("selection-2");
 		attributes2.disabled = true;
 		attributes2.innerHTML = "<option value='*' selected>ALL</option>"
-
 		// — — tables not yet acceptably selected — —
 		// reset table-2: not ready to be used yet
 		if(table == "1") {
@@ -690,7 +657,6 @@ function get_selections($table) {
 		else {
 			$("#join_row").show();
 		}
-
 		// disable/reset cross reference & hide available columns if nothing for standard select chosen
 		if(table_choice == "—Select Table—") {
 			$("#columns, #condition_row, #group_by, #order_by, #submit_custom_query").hide();
@@ -723,15 +689,12 @@ function get_selections($table) {
 			});
 		}
 	}
-
-
 	// add conditions to selects to query from ie 'WHERE A = 7...'
 	function add_columns_to_conditions(table) {
 		var conditions = document.getElementsByClassName("condition_select");
 		for(var x = 0; x < conditions.length; x++) {
 			var other_columns = (table == "2" ? document.getElementById("selection-1").options : []);  // declare here for length of 0
 			delete_table2_columns_from_conditions(conditions[x], table);
-
 			// new condition to each condition row
 			var table_columns = document.getElementById("selection-"+table).options;
 			for(var y = 1; y < table_columns.length; y++) {
@@ -741,9 +704,6 @@ function get_selections($table) {
 			}
 		}
 	}
-
-
-
 	// add available group by option to select based on available in condition-1
 	function add_columns_to_group_or_order_by(by_select) {
 		by_select.innerHTML = "<option value=''>—NONE—</option>";  // clear possible preexisting values
@@ -754,9 +714,7 @@ function get_selections($table) {
 			var optgroup = document.createElement("optgroup");
 			optgroup.label = option.text;
 			by_select.appendChild(optgroup);
-
 			create_option(by_select, option.text, option.value.split('|')[0]);  // add basis option
-
 			// add possible functions available for a column
 			var functions = column_function(option.value.split('|')[1]);
 			for(var y = 0; y < functions.length; y++) {
@@ -764,8 +722,6 @@ function get_selections($table) {
 			}
 		}
 	}
-
-
 	function add_columns_to_joins(table) {
 		if(table == "1") return;  // table-1 change means indefinite joining
 		var join = [document.getElementById("join_select"), document.getElementById("compare_join_select")];
@@ -775,9 +731,6 @@ function get_selections($table) {
 			for(var y = 1; y < selection[x].options.length; y++) create_option(join[x], selection[x].options[y].text, selection[x].options[y].value)
 		}
 	}
-
-
-
 	function add_columns_to_selections(data, table) {
 		// create columns to query from ie 'SELECT A, B, C...'
 		var columns_select = document.getElementById("selection-"+table);
@@ -790,8 +743,6 @@ function get_selections($table) {
 			create_option(columns_select, text, value);  // add attribute
 		}
 	}
-
-
 	// column has been selected; create tag to add to tage space
 	function add_tags(column_select, table) {
 		// clear tag space; display all columns if all selected
@@ -806,7 +757,6 @@ function get_selections($table) {
 				if(document.getElementById('tags-'+table).children.length == 0) column_select.value = '*';
 				refactor_selection_names(table);  // rename others to be sequential
 			};
-
 			var tag = create_tag(functionality, select, document.getElementById("tags-"+table));
 			if(tag.children[0].type == "hidden") {
 				var label = document.createElement("label");
@@ -814,15 +764,12 @@ function get_selections($table) {
 				label.style = "font-weight: normal !important;";
 				tag.insertBefore(label, tag.children[1]);
 			}
-
 			// hide corresponding column option to prevent double submission
 			hide_tag_option_from_tag_select_if_tag_count_equals_possibilities(select, selected_column, table);
 			refactor_selection_names(table);
 			$(column_select).val('');  // change select to blank value
 		}
 	}
-
-
 	// add material row to inventory update table
 	function additional_condition() {
 		var conditions = document.getElementsByClassName("condition_select");
@@ -835,7 +782,6 @@ function get_selections($table) {
 			alert("Please fill in the previous condition first");
 			return;
 		}
-
 		var initial_condition = document.getElementById("condition-1");
 		var table = document.getElementById("condition_table");
 		var row = table.insertRow(-1);  // insert at bottom
@@ -843,22 +789,16 @@ function get_selections($table) {
 		row.className = "conditions";
 		row.innerHTML = initial_condition.innerHTML.replace(/-1/g, "-"+new_condition_length);
 	}
-
-
 	// change the text of the button that collapses the section between current inventory and create new material
 	function button_text(element) {
 		if(element.innerHTML == "Create Custom Query") element.innerHTML = "Back to Pre-Built Queries";
 		else element.innerHTML = "Create Custom Query";
 	}
-
-
 	function column_function(type) {
 		return {"int" : ["AVG(opt)", "COUNT(opt)", "MAX(opt)", "MIN(opt)", "SUM(opt)"],
 						"decimal" :  ["AVG(opt)", "COUNT(opt)", "MAX(opt)", "MIN(opt)", "SUM(opt)"],
 						"datetime" : ["DAYNAME(opt)", "HOUR(opt)", "WEEKDAY(opt)"]}[type] || [];
 	}
-
-
 	// limit input types for conditions based on second part of value after "|" (column type)
 	function condition_input(element) {
 		// delete proceding conditions if value == COLUMN
@@ -872,8 +812,6 @@ function get_selections($table) {
 			if(element.value == "enum") comparison.maxlength = "1";
 		}
 	}
-
-
 	// create an option and add to passed select
 	function create_option(select, text, value) {
 		var option = document.createElement("option");
@@ -881,8 +819,6 @@ function get_selections($table) {
 		option.value = value;
 		select.appendChild(option);
 	}
-
-
 	// SELECT: allow for selection of functions applied to column
 	function create_selection(column_select, selected_column, value) {
 		var functions = column_function(column_select.value.split('|')[1]);
@@ -900,8 +836,6 @@ function get_selections($table) {
 		}
 		return select;
 	}
-
-
 	/* personal implimentation for creating a tag for data sorting
 		ARGS: -function of things to do after tag is closed,
 				-the text that will display within the tag
@@ -909,27 +843,21 @@ function get_selections($table) {
 	function create_tag(functionality, inner_element, parent) {
 		var tag = document.createElement("div");
 		var close = document.createElement("button");
-
 		// appearance
 		close.style = inner_element.style = "background-color:inherit;border-style:none;height:100%;display:inline-block;";
 		tag.style = 'background-color:#E8E8E8;border-style:solid;border-color:#fff;border-radius:5px;border-width:3px;display:inline-block;text-align:justify;';
-
 		// close button event
 		close.innerHTML = "&#215";
 		close.onclick = function() {
 			parent.removeChild(tag);  // remove self
 			functionality();  // user specified proceeding function
 		};
-
 		// add parts to tag; add tag to parent
 		tag.appendChild(inner_element);
 		tag.appendChild(close);
 		parent.appendChild(tag);	
 		return tag;
 	}
-
-
-
 	// delete table-2 columns from conditions by removing all and adding the ones from other table
 	function delete_table2_columns_from_conditions(select_to_add_to, table) {
 		select_to_add_to.innerHTML = "<option selected>—COLUMN—</option>";  // clear conditions
@@ -939,8 +867,6 @@ function get_selections($table) {
 		var other_table_name = other_table.options[other_table.selectedIndex].text;
 		for(var y = 1; y < other_columns.length; y++) create_option(select_to_add_to, other_columns[y].text, other_columns[y].value);
 	}
-
-
 	// when join_select, allow for selection of only same types for compare_join_select 
 	function filter_join(element) {
 		var type = element.value.split("|")[1];
@@ -950,8 +876,6 @@ function get_selections($table) {
 			if(type_comparison != type) comparison[x].style.display = "none";
 		}
 	}
-
-
 	function hide_tag_option_from_tag_select_if_tag_count_equals_possibilities(select, selected_column, table) {
 		var basic_value = select.value;
 		var max_selection_count = select.children.length || 1;
@@ -965,27 +889,20 @@ function get_selections($table) {
 			if(max_selection_count == selection_count) selected_column.hidden = true;
 		}
 	}
-
-
 	// when selection is deleted, rename all elements to be sequentially named
 	function refactor_selection_names(table) {
 		var tag_space = document.getElementById("tags-"+table);
 		if(tag_space.children.length == 0) $("#tags-"+table).val("*");
 		for(var x = 0; x < tag_space.children.length; x++) tag_space.children[x].children[0].name = 'tag-'+table+'-'+(x+1);
 	}
-
-
 	// used when selecting all or changing tables
 	function reset_column_select_and_tag_spaces(table) {
 		var column_select = document.getElementById("selection-"+table);
 		for(var x = 1; x < column_select.length; x++) column_select.options[x].hidden = false;
 		document.getElementById("tags-"+table).innerHTML = '';
 	}
-
-
 	// function to allow more precise evalutation for future options
 	function unhide_tag_option_if_hidden(select, selected_column, table) {
 		selected_column.hidden = false;
 	}
-
 </script>

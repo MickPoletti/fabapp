@@ -290,14 +290,41 @@ function advanceNum($i, $str){
 
     <div class="row">
         <div class="col-md-8">
-            <!--Drop down menu, instead of doing "style="margin-left:475px;" we can do align="center" just doesn't look as nice imo--> 
+            <!--Drop down menu, instead of doing "style="margin-left:475px;" we can do align="center" just doesn't look as nice imo-->
             <?php if ($staff) { ?>
+                <style>
+                #btn1 {
+                    display: block;
+                    
+                }
+                #Chart:hover + #btn1
+                {
+                    display: block;
+                }
+                </style>
+                
+                
                 <?php
                 include_once("connections/db_connect8.php");
                 
-                $resultSet = $mysqli->query("SELECT operator, r_id FROM users LIMIT 5") or die("database error:". mysqli_error($conn));
+                $transactionSet = $mysqli->query("SELECT staff_id, COUNT(*) FROM transactions GROUP BY staff_id ORDER BY COUNT(*) DESC LIMIT 5") or die("database error:". mysqli_error($conn));
                 ?>
-                    <table style="margin-left:470px, table-layout: fixed;">
+                    <table style="margin-left:470px, table-layout: fixed;" id="timetable">
+                        <button class="btn btn-default" onclick="myFunction(), hideElement()" id="btn1">Hide Table (-)</button>
+                <script>
+                function myFunction()
+                {
+                    var change = document.getElementById("btn1");
+                    if(change.innerHTML=="Hide Table (-)")
+                    {
+                        change.innerHTML = "Show Table (+)";
+                    } 
+                    else
+                    {
+                        change.innerHTML = "Hide Table (-)";
+                    } 
+                }
+                </script>
                         <tr>
                             <td class='col-md-6'>
                                 <select>
@@ -313,25 +340,49 @@ function advanceNum($i, $str){
                             </td>
                     </table>
                     
-                    <br>
-                    <div class="container" style="table-layout: fixed;">
-                        <table class="table table-striped table-bordered table-hover" style="table-layout: fixed; width: 70%;">
+                    <div class="container" style="table-layout: fixed" id="table">
+                        <table class="table table-striped table-bordered table-hover" style="table-layout: fixed; width: 40%; display: inline-table;">
                             <tr>
-                                <th>Employee Name</th>
-                                <th>Tickets</th>
+                            <th>Staff ID</th>
+                            <th>Number of Tickets Sold</th>
                             </tr>
+                            <?php
+                                while($rows=mysqli_fetch_assoc($transactionSet))
+                                {
+                            ?>
                             <tr>
-                                <?php while( $users = mysqli_fetch_assoc($resultSet) ) { ?>
-                                        <tr id="<?php echo $users ['operator']; ?>">
-                                        <td><?php echo $users ['operator']; ?></td>
-                                        <td><?php echo $users ['r_id']; ?></td>
-                                                                                        
+                                    <td><?php echo $rows['staff_id'];?></td>
+                                    <td><?php echo $rows['COUNT(*)'];?></td>
                             </tr>
-                            <?php } ?>
-                            
+                            <?php
+                                }
+                            ?>
                         </table>
+                        <div style="display: inline-block; vertical-align: bottom; width: 30%; padding-bottom: 15px;" id="Chart">
+                            <?php
+                            $statement = $mysqli->query("SELECT staff_id, COUNT(*) FROM transactions GROUP BY staff_id ORDER BY COUNT(*) DESC LIMIT 5") or die("database error:". mysqli_error($conn));
+                            $values = array();
+                            $test = array();
+                            while($rows = mysqli_fetch_assoc($statement))
+                            {
+                                $values[] = $rows['staff_id'];
+                                $test[] = $rows['COUNT(*)'];
+                            }
+                            $slices = array();
+                            foreach($values as $key => $values)
+                                $slices[] = strval($values).",$test[$key]";
+                            $test = implode(";", $slices);
+                            ?>
+                            <body  onload='renderChart("<?php echo $test?>","<?php echo "Top Employees" ?>")'>
+                            <canvas id="myChart"></canvas>
+                            <!-- check library for external calls -->
+                            </body>
+                            <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.js"></script>
+                        </div>   
                     </div>
-                    <?php } ?>
+
+                    
+                    <?php } ?>  
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <i class="fas fa-cubes fa-lg"></i> Device Status
@@ -602,5 +653,85 @@ include_once ($_SERVER['DOCUMENT_ROOT'].'/pages/footer.php');
                     "order": []
                     });
     }
+
+    function renderChart(data, htitle) {
+        console.log(data);
+        var labels = []; // the labels the pie chart
+        var backgroundColor = [];
+        var ctx = document.getElementById("myChart").getContext('2d'); //finds the element in the html to send this to
+        data = data.split(';'); // splitting the data into readable chunks in an array
+        for (var i = 0; i < 5; i++) {
+            labels[i] = data[i].substr(0 ,data[i].indexOf(','));
+        } // loop to set label portion of data (everything before the comma)
+        console.log(data);
+        for (var i = 0; i < 5; i++) {
+            data[i] = data[i].substr(data[i].indexOf(',')+1);
+            // loop to set data portion of in take (everything after the comma)
+        }
+        for (var i = 0; i<50; i++)
+        {
+            var red = Math.floor(Math.random() * (255)); // random red color value
+            var green = Math.floor(Math.random() * (255)); // randome= green color calue
+            var blue = Math.floor(Math.random() * (255)); // random blue color value
+            backgroundColor[i] = 'rgba('+red+', '+green+', '+blue+', '+0.3+')'; //concat into array that can be read by chart.js
+        }
+
+        // Data structure readable by chart.js
+        var myChart = new Chart(ctx, {
+            type: 'bar', // this is the type of chart we wish to display
+            data: {
+                // these are the visual data types that chart.js will use to construct our data
+                labels: labels,
+                datasets: [{
+                    label: "#of Tickets Sold",
+                    data: data,
+                    borderColor: 'rgba(104, 104, 241, 0.1)', 
+                    backgroundColor: backgroundColor// an array of colors
+                    // for chart.js to choose from to display each data point
+                }]
+            }, // Just a title option
+            options: {            
+                title: {
+                    display: true,
+                    text: htitle
+                }
+            }
+            /*
+            options: {            
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true,
+                            callback: function(value, index, values) {
+                                return float2dollar(value);
+                            }
+                        }
+                    }]                
+                }
+            },*/
+        });
+    }
     
+    function hideElement() {
+        var x = document.getElementById("Chart");
+        var y = document.getElementById("table");
+        var z = document.getElementById("timetable");
+        if (x.style.display === "none") {
+        x.style.display = "inline-block";
+        } else {
+            x.style.display = "none";
+        }
+        if (y.style.display === "none") {
+        y.style.display = "inline-block";
+        y.style.verticalalign = "middle";
+        } else {
+            y.style.display = "none";
+        }
+        if (z.style.display === "none") {
+        z.style.display = "inline-block";
+        } else {
+            z.style.display = "none";
+        }
+    }
+
 </script>
