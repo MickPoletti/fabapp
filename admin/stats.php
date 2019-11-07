@@ -413,18 +413,52 @@ function get_selections($table) {
 							</tr>
 						</table>
 					</div>
+					
 					<div style='padding:16px;'>
-						<body>
-						
-    					<button class="btn btn-default" onclick='renderChart("<?php echo $data['pie'] ?>","<?php echo $selected_val ?>")'>
-					        Render
-    					</button>
+						<body onload='renderChart("<?php echo $data['pie'] ?>","<?php echo $selected_val ?>"), hideChart()'>
+						<button class="btn btn-default" onclick="myFunction(), hideElement()" id="btn1" style="display: none;">Hide Chart</button>
+                	<script>
+                		function myFunction()
+                		{
+                    		var change = document.getElementById("btn1");
+                    		if(change.innerHTML=="Hide Chart")
+                    		{
+                        		change.innerHTML = "Show Chart";
+                    		} 
+                    		else
+                    		{
+                        		change.innerHTML = "Hide Chart";
+                    		} 
+                		}
+                		function hideElement() {
+        					var x = document.getElementById("myChart"); // this gets the chart
+        					
+        
+        					if (x.style.display === "none") { // if the chart is hidden
+        					x.style.display = "inline-block"; // show it on click
+        					} else {
+            				x.style.display = "none"; // else hide it
+        					}
+    						}
+    					function hideChart() {
+        					var x = document.getElementById("btn1"); // this gets the chart
+        					
+        
+        					if (x.style.display === "none") { // if the chart is hidden
+        					x.style.display = "inline-block"; // show it on click
+        					} else {
+            				x.style.display = "none"; // else hide it
+        					}
+    						}
+				</script>
+ 
         				<canvas id="myChart"></canvas>
         				</body>	
         				<!-- check library for external calls -->
         				<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.js"></script>
 						<!-- <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>  -->
 					</div>
+					
 				
 					<div style='padding:16px;'>
 						<table id='query_table' class='table col-md-12'>
@@ -533,7 +567,7 @@ function get_selections($table) {
 		}
 	}
 	 function download_piechart(element) {
-		var image = document.getElementById('piechart').toDataURL('image/png');
+		var image = document.getElementById('myChart').toDataURL('image/png');
 		element.href = image;
 	}
 	function create_pie_chart(data, filename) {
@@ -590,7 +624,7 @@ function get_selections($table) {
         	var red = Math.floor(Math.random() * (255)); // random red color value
         	var green = Math.floor(Math.random() * (255)); // randome= green color calue
         	var blue = Math.floor(Math.random() * (255)); // random blue color value
-        	backgroundColor[i] = 'rgba('+red+', '+green+', '+blue+', '+0.3+')'; //concat into array that can be read by chart.js
+        	backgroundColor[i] = 'rgba('+red+', '+green+', '+blue+', '+0.8+')'; //concat into array that can be read by chart.js
         }
         if(name.includes('by'))
         {

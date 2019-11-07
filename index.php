@@ -287,11 +287,22 @@ function advanceNum($i, $str){
         </div>
         <!-- /.row -->
     <?php } ?>
-
-    <div class="row">
-        <div class="col-md-8">
+            
+    <?php if ($staff && $staff->getRoleID() >= 10) { ?>
+    <script>
+        function results_button_text(element) {
+        if(element.innerHTML == "Hide Table") element.innerHTML = "Show Table";
+        else element.innerHTML = "Hide Table";
+    }
+    </script>   
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <button class='btn btn-default' style='right: 10px;' type='button' data-toggle='collapse' data-target='.results_collapse' 
+                  onclick='results_button_text(this);' aria-expanded='false' aria-controls='collapse'>Hide Table</button>
+            </div>
+            <div class='collapse in results_collapse'>
             <!--Drop down menu, instead of doing "style="margin-left:475px;" we can do align="center" just doesn't look as nice imo-->
-            <?php if ($staff && $staff->getRoleID() >= 10) { ?>
+            
                 <style>
                 #btn1 {
                     display: block;
@@ -307,39 +318,92 @@ function advanceNum($i, $str){
                 <?php
                 include_once("connections/db_connect8.php");
                 
-                $transactionSet = $mysqli->query("SELECT staff_id, COUNT(*) FROM transactions GROUP BY staff_id ORDER BY COUNT(*) DESC LIMIT 5") or die("database error:". mysqli_error($conn));
+                $transactionSet = $mysqli->query("SELECT staff_id, COUNT(trans_id) FROM transactions GROUP BY staff_id ORDER BY COUNT(trans_id) DESC LIMIT 5") or die("database error:". mysqli_error($conn));
+                $test2 = $mysqli->query("SELECT staff_id, COUNT(trans_id) FROM transactions GROUP BY staff_id ORDER BY COUNT(trans_id) DESC LIMIT 5") or die("database error:". mysqli_error($conn));
                 ?>
                     <table style="margin-left:470px, table-layout: fixed;" id="timetable">
-                        <button class="btn btn-default" onclick="myFunction(), hideElement()" id="btn1">Hide Table (-)</button>
-                <script>
-                function myFunction()
-                {
-                    var change = document.getElementById("btn1");
-                    if(change.innerHTML=="Hide Table (-)")
-                    {
-                        change.innerHTML = "Show Table (+)";
-                    } 
-                    else
-                    {
-                        change.innerHTML = "Hide Table (-)";
-                    } 
-                }
-                </script>
-                        <tr>
-                            <td class='col-md-6'>
-                                <select>
-                                    <option disabled selected hidden>Select time</option>
-                                    <option value='pastHour'>Past hour</option>
-                                    <option value='pastDay'>Past 24 hours</option>
-                                    <option value='pastWeek'>Past week</option>
-                                    <option value='pastMonth'>Past month</option>
-                                    <option value='pastThreeMonth'>Past 3 months</option>
-                                    <option value='pastSixMonth'>Past 6 months</option>
-                                    <option value='pastYear'>Past Year</option>
-                                </select>
-                            </td>
-                    </table>
                     
+                </script>
+                        <form method = "post">
+                            <tr>
+                                <td class='col-md-6' style="display: inline;">
+                                    <select id = 'static_queries' name ='static_queries' onchange = findValue()>
+                                        <option disabled selected hidden>Select time</option>
+                                        <option value="pastHour">Past hour</option>
+                                        <option value="pastDay">Past 24 hours</option>
+                                        <option value="pastWeek">Past week</option>
+                                        <option value="pastMonth">Past month</option>
+                                        <option value="pastThreeMonth">Past 3 months</option>
+                                        <option value="pastSixMonth">Past 6 months</option>
+                                        <option value="pastYear">Past Year</option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <input class="btn btn-default" type ="submit" name="sendingVal" id ="sendingVal" value = "Update Table" style="display: inline-block;"/>
+                        </form>  
+                    </table>
+                    <script type="text/javascript">
+                        function findValue()
+                        {
+                            var selectedTime = document.getElementById("static_queries").value;
+                            document.cookie = "time= "+ selectedTime + ";";
+                        }
+                    </script>
+                    <?php
+                        if(array_key_exists('sendingVal', $_POST))
+                        {
+                            include_once("connections/db_connect8.php");
+
+                            if ($_COOKIE["time"] == "pastHour")
+                            {
+                                $currentDate = date('Y-m-d H:i:s');
+                                $date = date( 'Y-m-d H:i:s', strtotime( $currentDate . ' -1 hour' ) );
+                                $transactionSet = $mysqli->query("SELECT COUNT(trans_id), staff_id FROM transactions WHERE t_start >= '$date' GROUP BY staff_id ORDER BY COUNT(trans_id) DESC LIMIT 5");
+                            }
+                            else if ($_COOKIE["time"] == "pastDay")
+                            {
+                                $currentDate = date('Y-m-d H:i:s');
+                                $date = date( 'Y-m-d H:i:s', strtotime( $currentDate . ' -1 day' ) );
+                                $transactionSet = $mysqli->query("SELECT COUNT(trans_id), staff_id FROM transactions WHERE t_start >= '$date' GROUP BY staff_id ORDER BY COUNT(trans_id) DESC LIMIT 5");
+                            }
+                            else if ($_COOKIE["time"] == "pastWeek")
+                            {
+                                $currentDate = date('Y-m-d H:i:s');
+                                $date = date( 'Y-m-d H:i:s', strtotime( $currentDate . ' -1 week' ) );
+                                $transactionSet = $mysqli->query("SELECT COUNT(trans_id), staff_id FROM transactions WHERE t_start >= '$date' GROUP BY staff_id ORDER BY COUNT(trans_id) DESC LIMIT 5");
+                            }
+                            else if ($_COOKIE["time"] == "pastMonth")
+                            {
+                                $currentDate = date('Y-m-d H:i:s');
+                                $date = date( 'Y-m-d H:i:s', strtotime( $currentDate . ' -1 month' ) );
+                                $transactionSet = $mysqli->query("SELECT COUNT(trans_id), staff_id FROM transactions WHERE t_start >= '$date' GROUP BY staff_id ORDER BY COUNT(trans_id) DESC LIMIT 5");
+                            }
+                            else if  ($_COOKIE["time"] == "pastThreeMonth")
+                            {
+                                $currentDate = date('Y-m-d H:i:s');
+                                $date = date( 'Y-m-d H:i:s', strtotime( $currentDate . ' -3 month' ) );
+                                $transactionSet = $mysqli->query("SELECT COUNT(trans_id), staff_id FROM transactions WHERE t_start >= '$date' GROUP BY staff_id ORDER BY COUNT(trans_id) DESC LIMIT 5");
+                            }
+                            else if ($_COOKIE["time"] == "pastSixMonth")
+                            {
+                                $currentDate = date('Y-m-d H:i:s');
+                                $date = date( 'Y-m-d H:i:s', strtotime( $currentDate . ' -6 months' ) );
+                                $transactionSet = $mysqli->query("SELECT COUNT(trans_id), staff_id FROM transactions WHERE t_start >= '$date' GROUP BY staff_id ORDER BY COUNT(trans_id) DESC LIMIT 5");
+                            }
+                            else if ($_COOKIE["time"] == "pastYear")
+                            {
+                                $currentDate = date('Y-m-d H:i:s');
+                                $date = date( 'Y-m-d H:i:s', strtotime( $currentDate . ' -1 year' ) );
+                                $transactionSet = $mysqli->query("SELECT COUNT(trans_id), staff_id FROM transactions WHERE t_start >= '$date' GROUP BY staff_id ORDER BY COUNT(trans_id) DESC LIMIT 5");
+
+                            }
+                            else 
+                            {
+                                echo("Please select a date");
+                            }
+                            
+                        }
+                    ?>
                     <div class="container" style="table-layout: fixed" id="table">
                         <table class="table table-striped table-bordered table-hover" style="table-layout: fixed; width: 40%; display: inline-table;">
                             <tr>
@@ -349,10 +413,11 @@ function advanceNum($i, $str){
                             <?php
                                 while($rows=mysqli_fetch_assoc($transactionSet))
                                 {
+                                    $statement[] = $rows;
                             ?>
                             <tr>
                                     <td><?php echo $rows['staff_id'];?></td>
-                                    <td><?php echo $rows['COUNT(*)'];?></td>
+                                    <td><?php echo $rows['COUNT(trans_id)'];?></td>
                             </tr>
                             <?php
                                 }
@@ -360,13 +425,14 @@ function advanceNum($i, $str){
                         </table>
                         <div style="display: inline-block; vertical-align: bottom; width: 30%; padding-bottom: 15px;" id="Chart">
                             <?php
-                            $statement = $mysqli->query("SELECT staff_id, COUNT(*) FROM transactions GROUP BY staff_id ORDER BY COUNT(*) DESC LIMIT 5") or die("database error:". mysqli_error($conn));
+
                             $values = array();
                             $test = array();
-                            while($rows = mysqli_fetch_assoc($statement))
+                            
+                            while($rows = mysqli_fetch_assoc($test2))
                             {
                                 $values[] = $rows['staff_id'];
-                                $test[] = $rows['COUNT(*)'];
+                                $test[] = $rows['COUNT(trans_id)'];
                             }
                             $slices = array();
                             foreach($values as $key => $values)
@@ -374,15 +440,19 @@ function advanceNum($i, $str){
                             $test = implode(";", $slices);
                             ?>
                             <body  onload='renderChart("<?php echo $test?>","<?php echo "Top Employees" ?>")'>
-                            <canvas id="myChart"></canvas>
+                            <canvas id="myChart" ></canvas>
                             <!-- check library for external calls -->
                             </body>
                             <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.js"></script>
                         </div>   
                     </div>
+                </div>
+            </div>
 
-                    
-                    <?php } ?>  
+
+       
+                     
+                    <?php } ?> 
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <i class="fas fa-cubes fa-lg"></i> Device Status
@@ -712,25 +782,29 @@ include_once ($_SERVER['DOCUMENT_ROOT'].'/pages/footer.php');
         });
     }
     
+    // Function to hide elements of the interface
     function hideElement() {
-        var x = document.getElementById("Chart");
-        var y = document.getElementById("table");
-        var z = document.getElementById("timetable");
-        if (x.style.display === "none") {
-        x.style.display = "inline-block";
+        var x = document.getElementById("Chart"); // this gets the chart
+        var y = document.getElementById("table"); // this gets the leader board
+        var z = document.getElementById("timetable"); // this gets the timetable
+        
+        if (x.style.display === "none") { // if the chart is hidden
+        x.style.display = "inline-block"; // show it on click
         } else {
-            x.style.display = "none";
+            x.style.display = "none"; // else hide it
         }
-        if (y.style.display === "none") {
-        y.style.display = "inline-block";
+
+        if (y.style.display === "none") { // if the leaderboard is hidden
+        y.style.display = "inline-block"; // show it
         y.style.verticalalign = "middle";
         } else {
-            y.style.display = "none";
+            y.style.display = "none"; // else hide it
         }
-        if (z.style.display === "none") {
-        z.style.display = "inline-block";
+
+        if (z.style.display === "none") { // if timetable hidden
+        z.style.display = "inline-block"; //show it
         } else {
-            z.style.display = "none";
+            z.style.display = "none"; // else hide it
         }
     }
 
