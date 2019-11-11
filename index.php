@@ -7,7 +7,6 @@ include_once ($_SERVER['DOCUMENT_ROOT'].'/pages/header.php');
 $device_array = array();
 $_SESSION['type'] = "home";
 $number_of_queue_tables = 0;
-
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if(isset($_POST['alertBtn'])){
         echo "<script>console.log( \"Debug : alertBtn\");</script>";
@@ -128,7 +127,6 @@ function advanceNum($i, $str){
                                                             ORDER BY Q_id;
                                                     ")) {
    
-
                                                         while ($row = $result->fetch_assoc()) {
                                                             $user = Users::withID($row['Operator']);?>
                                                             <tr class="tablerow">
@@ -318,8 +316,11 @@ function advanceNum($i, $str){
                 <?php
                 include_once("connections/db_connect8.php");
                 
-                $transactionSet = $mysqli->query("SELECT staff_id, COUNT(trans_id) FROM transactions GROUP BY staff_id ORDER BY COUNT(trans_id) DESC LIMIT 5") or die("database error:". mysqli_error($conn));
-                $test2 = $mysqli->query("SELECT staff_id, COUNT(trans_id) FROM transactions GROUP BY staff_id ORDER BY COUNT(trans_id) DESC LIMIT 5") or die("database error:". mysqli_error($conn));
+                $test2 = $mysqli->query("SELECT staff_id, COUNT(trans_id) FROM transactions GROUP BY staff_id ORDER BY COUNT(trans_id) DESC LIMIT 10") or die("database error:". mysqli_error($conn));
+                $transactionSet = $mysqli->query("SELECT staff_id, COUNT(trans_id) FROM transactions GROUP BY staff_id ORDER BY COUNT(trans_id) DESC LIMIT 10") or die("database error:". mysqli_error($conn));
+                $deviceSet = $mysqli->query("SELECT d_id, COUNT(trans_id) FROM transactions GROUP BY d_id ORDER BY COUNT(trans_id) DESC LIMIT 10") or die("database error:". mysqli_error($conn));
+                $chartSet = $mysqli->query("SELECT staff_id, COUNT(trans_id) FROM transactions GROUP BY staff_id ORDER BY COUNT(trans_id) DESC LIMIT 10") or die("database error:". mysqli_error($conn));
+                $deviceChartSet = $mysqli->query("SELECT d_id, COUNT(*) FROM transactions GROUP BY d_id ORDER BY COUNT(*) DESC LIMIT 10") or die("database error:". mysqli_error($conn));
                 ?>
                     <table style="margin-left:470px, table-layout: fixed;" id="timetable">
                     
@@ -353,49 +354,47 @@ function advanceNum($i, $str){
                         if(array_key_exists('sendingVal', $_POST))
                         {
                             include_once("connections/db_connect8.php");
-
                             if ($_COOKIE["time"] == "pastHour")
                             {
                                 $currentDate = date('Y-m-d H:i:s');
                                 $date = date( 'Y-m-d H:i:s', strtotime( $currentDate . ' -1 hour' ) );
-                                $transactionSet = $mysqli->query("SELECT COUNT(trans_id), staff_id FROM transactions WHERE t_start >= '$date' GROUP BY staff_id ORDER BY COUNT(trans_id) DESC LIMIT 5");
+                                $transactionSet = $mysqli->query("SELECT COUNT(trans_id), staff_id FROM transactions WHERE t_start >= '$date' GROUP BY staff_id ORDER BY COUNT(trans_id) DESC LIMIT 10");
                             }
                             else if ($_COOKIE["time"] == "pastDay")
                             {
                                 $currentDate = date('Y-m-d H:i:s');
                                 $date = date( 'Y-m-d H:i:s', strtotime( $currentDate . ' -1 day' ) );
-                                $transactionSet = $mysqli->query("SELECT COUNT(trans_id), staff_id FROM transactions WHERE t_start >= '$date' GROUP BY staff_id ORDER BY COUNT(trans_id) DESC LIMIT 5");
+                                $transactionSet = $mysqli->query("SELECT COUNT(trans_id), staff_id FROM transactions WHERE t_start >= '$date' GROUP BY staff_id ORDER BY COUNT(trans_id) DESC LIMIT 10");
                             }
                             else if ($_COOKIE["time"] == "pastWeek")
                             {
                                 $currentDate = date('Y-m-d H:i:s');
                                 $date = date( 'Y-m-d H:i:s', strtotime( $currentDate . ' -1 week' ) );
-                                $transactionSet = $mysqli->query("SELECT COUNT(trans_id), staff_id FROM transactions WHERE t_start >= '$date' GROUP BY staff_id ORDER BY COUNT(trans_id) DESC LIMIT 5");
+                                $transactionSet = $mysqli->query("SELECT COUNT(trans_id), staff_id FROM transactions WHERE t_start >= '$date' GROUP BY staff_id ORDER BY COUNT(trans_id) DESC LIMIT 10");
                             }
                             else if ($_COOKIE["time"] == "pastMonth")
                             {
                                 $currentDate = date('Y-m-d H:i:s');
                                 $date = date( 'Y-m-d H:i:s', strtotime( $currentDate . ' -1 month' ) );
-                                $transactionSet = $mysqli->query("SELECT COUNT(trans_id), staff_id FROM transactions WHERE t_start >= '$date' GROUP BY staff_id ORDER BY COUNT(trans_id) DESC LIMIT 5");
+                                $transactionSet = $mysqli->query("SELECT COUNT(trans_id), staff_id FROM transactions WHERE t_start >= '$date' GROUP BY staff_id ORDER BY COUNT(trans_id) DESC LIMIT 10");
                             }
                             else if  ($_COOKIE["time"] == "pastThreeMonth")
                             {
                                 $currentDate = date('Y-m-d H:i:s');
                                 $date = date( 'Y-m-d H:i:s', strtotime( $currentDate . ' -3 month' ) );
-                                $transactionSet = $mysqli->query("SELECT COUNT(trans_id), staff_id FROM transactions WHERE t_start >= '$date' GROUP BY staff_id ORDER BY COUNT(trans_id) DESC LIMIT 5");
+                                $transactionSet = $mysqli->query("SELECT COUNT(trans_id), staff_id FROM transactions WHERE t_start >= '$date' GROUP BY staff_id ORDER BY COUNT(trans_id) DESC LIMIT 10");
                             }
                             else if ($_COOKIE["time"] == "pastSixMonth")
                             {
                                 $currentDate = date('Y-m-d H:i:s');
                                 $date = date( 'Y-m-d H:i:s', strtotime( $currentDate . ' -6 months' ) );
-                                $transactionSet = $mysqli->query("SELECT COUNT(trans_id), staff_id FROM transactions WHERE t_start >= '$date' GROUP BY staff_id ORDER BY COUNT(trans_id) DESC LIMIT 5");
+                                $transactionSet = $mysqli->query("SELECT COUNT(trans_id), staff_id FROM transactions WHERE t_start >= '$date' GROUP BY staff_id ORDER BY COUNT(trans_id) DESC LIMIT 10");
                             }
                             else if ($_COOKIE["time"] == "pastYear")
                             {
                                 $currentDate = date('Y-m-d H:i:s');
                                 $date = date( 'Y-m-d H:i:s', strtotime( $currentDate . ' -1 year' ) );
-                                $transactionSet = $mysqli->query("SELECT COUNT(trans_id), staff_id FROM transactions WHERE t_start >= '$date' GROUP BY staff_id ORDER BY COUNT(trans_id) DESC LIMIT 5");
-
+                                $transactionSet = $mysqli->query("SELECT COUNT(trans_id), staff_id FROM transactions WHERE t_start >= '$date' GROUP BY staff_id ORDER BY COUNT(trans_id) DESC LIMIT 10");
                             }
                             else 
                             {
@@ -423,9 +422,8 @@ function advanceNum($i, $str){
                                 }
                             ?>
                         </table>
-                        <div style="display: inline-block; vertical-align: bottom; width: 30%; padding-bottom: 15px;" id="Chart">
+                        <div style="display: inline-block; vertical-align: bottom; width: 50%; padding-bottom: 15px;" id="Chart">
                             <?php
-
                             $values = array();
                             $test = array();
                             
@@ -439,14 +437,57 @@ function advanceNum($i, $str){
                                 $slices[] = strval($values).",$test[$key]";
                             $test = implode(";", $slices);
                             ?>
-                            <body  onload='renderChart("<?php echo $test?>","<?php echo "Top Employees" ?>")'>
+                            <?php
+                                $values1 = array();
+                                $test1 = array();
+                                
+                                while($rows1 = mysqli_fetch_assoc($deviceChartSet))
+                                {
+                                    $values1[] = $rows1['d_id'];
+                                    $test1[] = $rows1['COUNT(*)'];
+                                }
+                                $slices1 = array();
+                                foreach($values1 as $key1 => $values1)
+                                    $slices1[] = strval($values1).",$test1[$key1]";
+                                $test1 = implode(";", $slices1);
+                            ?>
+                            <body  onload='renderChart("<?php echo $test?>","<?php echo "Top Employees" ?>"), renderChart1("<?php echo $test1?>","<?php echo "Top Devices" ?>")'>
                             <canvas id="myChart" ></canvas>
                             <!-- check library for external calls -->
                             </body>
                             <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.js"></script>
-                        </div>   
+                        </div>
+                                 
                     </div>
-                </div>
+                    <div class="container" style="table-layout: fixed;" id="table">
+                            <table class="table table-striped table-bordered table-hover" style="table-layout: fixed; width: 40%; display: inline-table;">
+                                <tr>
+                                <th>Device</th>
+                                <th>Tickets per device</th>
+                                </tr>
+                                <?php
+                                    while($rows=mysqli_fetch_assoc($deviceSet))
+                                    {
+                                        $statement[] = $rows;
+                                ?>
+                                <tr>
+                                        <td><?php echo $rows['d_id'];?></td>
+                                        <td><?php echo $rows['COUNT(trans_id)'];?></td>
+                                </tr>
+                                <?php
+                                    }
+                                ?>
+                            </table>
+                            <div style="display: inline-block; vertical-align: bottom; width: 50%; padding-bottom: 15px;" id="deviceChart">
+                                
+                                
+                                <canvas id="myChartDevice"></canvas>
+                                <!-- check library for external calls -->
+                                </body>
+                                <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.js"></script>
+                            </div>
+                    </div>
+                </div>            
             </div>
 
 
@@ -507,11 +548,72 @@ function advanceNum($i, $str){
                                         if( $row["status_id"] == 11) {
                                             echo("<td align='center'>".$ticket->getStatus()->getMsg()."</td>");
                                         } elseif (isset($row["est_time"])) {
-                                            echo("<td align='center'><div id=\"t$row[trans_id]\">$row[est_time] </div></td>" );
+                                            /*echo("<td align='center'><div id=\"t$row[trans_id]\">$row[est_time] </div></td>" );
+                                            $str_time = preg_replace("/^([\d]{1,2})\:([\d]{2})$/", "00:$1:$2", $row["est_time"]);
+                                            sscanf($str_time, "%d:%d:%d", $hours, $minutes, $seconds);
+                                            $time_seconds = $hours * 3600 + $minutes * 60 + $seconds- (time() - strtotime($row["t_start"]) ) + $sv["grace_period"];
+                                            array_push($device_array, array("t".$row["trans_id"], $time_seconds));*/
+                                              //echo("<td align='center'><div id=\"t$row[trans_id]\">$row[est_time] </div></td>" )
+                                            
+                                            if ($staff && $staff->getRoleID() >= 10){ 
+                                                ?>
+                                                    <div>
+                                                    <style >
+                                                        .loader {
+                                                        border: 3px solid #f3f3f3; /* Light grey */
+                                                        border-top: 3px solid #3498db; /* Blue */
+                                                        border-radius: 50%;
+                                                        width: 20px;
+                                                        height: 20px;
+                                                        animation: spin 2s linear infinite;
+                                                        }
+    
+                                                        @keyframes spin {
+                                                        0% { transform: rotate(0deg); }
+                                                        100% { transform: rotate(360deg); }
+                                                        }
+                                                        /* The alert message box */
+                                                        .alert {
+                                                          padding: 20px;
+                                                          background-color: #f44336; /* Red */
+                                                          color: red;
+                                                          margin-bottom: 15px;
+                                                        }
+
+                                                        /* The close button */
+                                                        .closebtn {
+                                                          margin-left: 15px;
+                                                          color: red;
+                                                          font-weight: bold;
+                                                          float: center;
+                                                          font-size: 22px;
+                                                          line-height: 20px;
+                                                          cursor: pointer;
+                                                          transition: 0.3s;
+                                                        }
+
+                                                        /* When moving the mouse over the close button */
+                                                        .closebtn:hover {
+                                                          color: black;
+                                                        }
+                                                    </style>
+                                                    </div>
+                                                    <?php }
+                                            
+                                            
                                             $str_time = preg_replace("/^([\d]{1,2})\:([\d]{2})$/", "00:$1:$2", $row["est_time"]);
                                             sscanf($str_time, "%d:%d:%d", $hours, $minutes, $seconds);
                                             $time_seconds = $hours * 3600 + $minutes * 60 + $seconds- (time() - strtotime($row["t_start"]) ) + $sv["grace_period"];
                                             array_push($device_array, array("t".$row["trans_id"], $time_seconds));
+                                            if ($time_seconds <= 0 ){
+                                                echo("<td align='center' style=\"color:red\"><div id=\"t$row[trans_id]\">$row[est_time]<div class='loader'></div></div>");
+                                                echo '<span class="closebtn" onclick="this.style.display=\'none\';">ALERT&times;</span>';
+
+                                                } else {
+                                                echo("<td align='center' ><div id=\"t$row[trans_id]\">$row[est_time]<div class='loader'></div></div>");
+                                                echo '<div class="loader">';
+                                            };
+
                                         } else 
                                             echo("<td align=\"center\">-</td>");
                                     } else { ?>
@@ -661,7 +763,6 @@ include_once ($_SERVER['DOCUMENT_ROOT'].'/pages/footer.php');
         xmlhttp.open("GET","pages/sub/getWait.php",true);
         xmlhttp.send();
         myNum = document.getElementById("myNum").value;
-
         <?php if($sv["serving"] != 0) { ?>
             var x = document.getElementById("serving").innerHTML;
             if (x == myNum){
@@ -723,20 +824,31 @@ include_once ($_SERVER['DOCUMENT_ROOT'].'/pages/footer.php');
                     "order": []
                     });
     }
-
     function renderChart(data, htitle) {
         console.log(data);
         var labels = []; // the labels the pie chart
         var backgroundColor = [];
         var ctx = document.getElementById("myChart").getContext('2d'); //finds the element in the html to send this to
         data = data.split(';'); // splitting the data into readable chunks in an array
-        for (var i = 0; i < 5; i++) {
-            labels[i] = data[i].substr(0 ,data[i].indexOf(','));
-        } // loop to set label portion of data (everything before the comma)
-        console.log(data);
-        for (var i = 0; i < 5; i++) {
-            data[i] = data[i].substr(data[i].indexOf(',')+1);
+        if(data.length<10){
+            for (var i = 0; i < data.length; i++) {
+                labels[i] = data[i].substr(0 ,data[i].indexOf(','));
+            } // loop to set label portion of data (everything before the comma)
+            console.log(data);
+            for (var i = 0; i < data.length; i++) {
+                data[i] = data[i].substr(data[i].indexOf(',')+1);
+                // loop to set data portion of in take (everything after the comma)
+            }
+        }
+        else{
+            for (var i = 0; i < 10; i++) {
+                labels[i] = data[i].substr(0 ,data[i].indexOf(','));
+            } // loop to set label portion of data (everything before the comma)
+            console.log(data);
+            for (var i = 0; i < 10; i++) {
+                data[i] = data[i].substr(data[i].indexOf(',')+1);
             // loop to set data portion of in take (everything after the comma)
+            }
         }
         for (var i = 0; i<50; i++)
         {
@@ -745,7 +857,6 @@ include_once ($_SERVER['DOCUMENT_ROOT'].'/pages/footer.php');
             var blue = Math.floor(Math.random() * (255)); // random blue color value
             backgroundColor[i] = 'rgba('+red+', '+green+', '+blue+', '+0.3+')'; //concat into array that can be read by chart.js
         }
-
         // Data structure readable by chart.js
         var myChart = new Chart(ctx, {
             type: 'bar', // this is the type of chart we wish to display
@@ -760,52 +871,83 @@ include_once ($_SERVER['DOCUMENT_ROOT'].'/pages/footer.php');
                     // for chart.js to choose from to display each data point
                 }]
             }, // Just a title option
-            options: {            
+            options: {
+                responsive: true,            
                 title: {
                     display: true,
                     text: htitle
-                }
-            }
-            /*
-            options: {            
+                },
                 scales: {
                     yAxes: [{
+                        display: true,
                         ticks: {
                             beginAtZero: true,
-                            callback: function(value, index, values) {
-                                return float2dollar(value);
-                            }
+                            min: 0
                         }
-                    }]                
-                }
-            },*/
+                    }]
+                },
+            }
         });
     }
     
-    // Function to hide elements of the interface
-    function hideElement() {
-        var x = document.getElementById("Chart"); // this gets the chart
-        var y = document.getElementById("table"); // this gets the leader board
-        var z = document.getElementById("timetable"); // this gets the timetable
+    function renderChart1(data, htitle) {
+        var labels = []; // the labels the pie chart
+        var backgroundColor = [];
+        var ctx = document.getElementById("myChartDevice").getContext('2d'); //finds the element in the html to send this to
+        data = data.split(';'); // splitting the data into readable chunks in an array
+        for (var i = 0; i < 10; i++) {
+            labels[i] = data[i].substr(0 ,data[i].indexOf(','));
+        } // loop to set label portion of data (everything before the comma)
+        console.log(data);
+        for (var i = 0; i < 10; i++) {
+            data[i] = data[i].substr(data[i].indexOf(',')+1);
+            // loop to set data portion of in take (everything after the comma)
+        }
+        for (var i = 0; i<50; i++)
+        {
+            var red = Math.floor(Math.random() * (255)); // random red color value
+            var green = Math.floor(Math.random() * (255)); // randome= green color calue
+            var blue = Math.floor(Math.random() * (255)); // random blue color value
+            backgroundColor[i] = 'rgba('+red+', '+green+', '+blue+', '+0.3+')'; //concat into array that can be read by chart.js
+        }
         
-        if (x.style.display === "none") { // if the chart is hidden
-        x.style.display = "inline-block"; // show it on click
-        } else {
-            x.style.display = "none"; // else hide it
-        }
-
-        if (y.style.display === "none") { // if the leaderboard is hidden
-        y.style.display = "inline-block"; // show it
-        y.style.verticalalign = "middle";
-        } else {
-            y.style.display = "none"; // else hide it
-        }
-
-        if (z.style.display === "none") { // if timetable hidden
-        z.style.display = "inline-block"; //show it
-        } else {
-            z.style.display = "none"; // else hide it
-        }
+        var myChartDevice = new Chart(ctx, {
+            type: 'bar', // this is the type of chart we wish to display
+            data: {
+                // these are the visual data types that chart.js will use to construct our data
+                
+                labels: labels,
+                datasets: [{
+                    barPercentage: 0.5,
+                    barThickness: 20,
+                    maxBarThickness: 28,
+                    minBarLength: 2,
+                    label: "#of Tickets Sold",
+                    data: data,
+                    borderColor: backgroundColor,
+                    backgroundColor: backgroundColor// an array of colors
+                    // for chart.js to choose from to display each data point
+                }]
+            }, // Just a title option
+            options: { 
+                responsive: true,  
+                //maintainAspectRatio: false,         
+                title: {
+                    display: true,
+                    text: htitle
+                },
+                scales: {
+                    yAxes: [{
+                        display: true,
+                        ticks: {
+                            beginAtZero: true,
+                            min: 0
+                        }
+                    }]
+                },
+            }
+        });
     }
+
 
 </script>
