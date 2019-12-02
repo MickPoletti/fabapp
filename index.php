@@ -296,9 +296,9 @@ function advanceNum($i, $str){
     <div class="panel panel-default">
         <div class="panel-heading">
             <button class='btn btn-default' style='right: 10px;' type='button' data-toggle='collapse' data-target='.results_collapse' 
-                  onclick='results_button_text(this);' aria-expanded='false' aria-controls='collapse'>Hide Table</button>
+                  onclick='results_button_text(this);' aria-expanded='false' aria-controls='collapse'>Show Table</button>
             </div>
-            <div class='collapse in results_collapse'>
+            <div class='collapse results_collapse' >
             <!--Drop down menu, instead of doing "style="margin-left:475px;" we can do align="center" just doesn't look as nice imo-->
             
                 <style>
@@ -327,6 +327,7 @@ function advanceNum($i, $str){
                 </script>
                         <form method = "post">
                             <tr>
+
                                 <td class='col-md-6' style="display: inline;">
                                     <select id = 'static_queries' name ='static_queries' onchange = findValue()>
                                         <option disabled selected hidden>Select time</option>
@@ -338,11 +339,13 @@ function advanceNum($i, $str){
                                         <option value="pastSixMonth">Past 6 months</option>
                                         <option value="pastYear">Past Year</option>
                                     </select>
+                                    <input class="btn btn-default" type ="submit" name="sendingVal" id ="sendingVal" value = "Update Table" style="display: inline-block;"/>
                                 </td>
                             </tr>
-                            <input class="btn btn-default" type ="submit" name="sendingVal" id ="sendingVal" value = "Update Table" style="display: inline-block;"/>
+                            
                         </form>  
                     </table>
+
                     <script type="text/javascript">
                         function findValue()
                         {
@@ -359,46 +362,52 @@ function advanceNum($i, $str){
                                 $currentDate = date('Y-m-d H:i:s');
                                 $date = date( 'Y-m-d H:i:s', strtotime( $currentDate . ' -1 hour' ) );
                                 $transactionSet = $mysqli->query("SELECT COUNT(trans_id), staff_id FROM transactions WHERE t_start >= '$date' GROUP BY staff_id ORDER BY COUNT(trans_id) DESC LIMIT 10");
+                                $test2 = $mysqli->query("SELECT COUNT(trans_id), staff_id FROM transactions WHERE t_start >= '$date' GROUP BY staff_id ORDER BY COUNT(trans_id) DESC LIMIT 10");
                             }
                             else if ($_COOKIE["time"] == "pastDay")
                             {
                                 $currentDate = date('Y-m-d H:i:s');
                                 $date = date( 'Y-m-d H:i:s', strtotime( $currentDate . ' -1 day' ) );
                                 $transactionSet = $mysqli->query("SELECT COUNT(trans_id), staff_id FROM transactions WHERE t_start >= '$date' GROUP BY staff_id ORDER BY COUNT(trans_id) DESC LIMIT 10");
+                                $test2 = $mysqli->query("SELECT COUNT(trans_id), staff_id FROM transactions WHERE t_start >= '$date' GROUP BY staff_id ORDER BY COUNT(trans_id) DESC LIMIT 10");
                             }
                             else if ($_COOKIE["time"] == "pastWeek")
                             {
                                 $currentDate = date('Y-m-d H:i:s');
                                 $date = date( 'Y-m-d H:i:s', strtotime( $currentDate . ' -1 week' ) );
                                 $transactionSet = $mysqli->query("SELECT COUNT(trans_id), staff_id FROM transactions WHERE t_start >= '$date' GROUP BY staff_id ORDER BY COUNT(trans_id) DESC LIMIT 10");
+                                $test2 = $mysqli->query("SELECT COUNT(trans_id), staff_id FROM transactions WHERE t_start >= '$date' GROUP BY staff_id ORDER BY COUNT(trans_id) DESC LIMIT 10");
                             }
                             else if ($_COOKIE["time"] == "pastMonth")
                             {
                                 $currentDate = date('Y-m-d H:i:s');
                                 $date = date( 'Y-m-d H:i:s', strtotime( $currentDate . ' -1 month' ) );
                                 $transactionSet = $mysqli->query("SELECT COUNT(trans_id), staff_id FROM transactions WHERE t_start >= '$date' GROUP BY staff_id ORDER BY COUNT(trans_id) DESC LIMIT 10");
+                                $test2 = $mysqli->query("SELECT COUNT(trans_id), staff_id FROM transactions WHERE t_start >= '$date' GROUP BY staff_id ORDER BY COUNT(trans_id) DESC LIMIT 10");
                             }
                             else if  ($_COOKIE["time"] == "pastThreeMonth")
                             {
                                 $currentDate = date('Y-m-d H:i:s');
                                 $date = date( 'Y-m-d H:i:s', strtotime( $currentDate . ' -3 month' ) );
                                 $transactionSet = $mysqli->query("SELECT COUNT(trans_id), staff_id FROM transactions WHERE t_start >= '$date' GROUP BY staff_id ORDER BY COUNT(trans_id) DESC LIMIT 10");
+                                $test2 = $mysqli->query("SELECT COUNT(trans_id), staff_id FROM transactions WHERE t_start >= '$date' GROUP BY staff_id ORDER BY COUNT(trans_id) DESC LIMIT 10");
                             }
                             else if ($_COOKIE["time"] == "pastSixMonth")
                             {
                                 $currentDate = date('Y-m-d H:i:s');
                                 $date = date( 'Y-m-d H:i:s', strtotime( $currentDate . ' -6 months' ) );
                                 $transactionSet = $mysqli->query("SELECT COUNT(trans_id), staff_id FROM transactions WHERE t_start >= '$date' GROUP BY staff_id ORDER BY COUNT(trans_id) DESC LIMIT 10");
+                                $test2 = $mysqli->query("SELECT COUNT(trans_id), staff_id FROM transactions WHERE t_start >= '$date' GROUP BY staff_id ORDER BY COUNT(trans_id) DESC LIMIT 10");
                             }
                             else if ($_COOKIE["time"] == "pastYear")
                             {
                                 $currentDate = date('Y-m-d H:i:s');
                                 $date = date( 'Y-m-d H:i:s', strtotime( $currentDate . ' -1 year' ) );
                                 $transactionSet = $mysqli->query("SELECT COUNT(trans_id), staff_id FROM transactions WHERE t_start >= '$date' GROUP BY staff_id ORDER BY COUNT(trans_id) DESC LIMIT 10");
+                                $test2 = $mysqli->query("SELECT COUNT(trans_id), staff_id FROM transactions WHERE t_start >= '$date' GROUP BY staff_id ORDER BY COUNT(trans_id) DESC LIMIT 10");
                             }
                             else 
                             {
-                                echo("Please select a date");
                             }
                             
                         }
@@ -433,29 +442,39 @@ function advanceNum($i, $str){
                                 $test[] = $rows['COUNT(trans_id)'];
                             }
                             $slices = array();
-                            foreach($values as $key => $values)
-                                $slices[] = strval($values).",$test[$key]";
-                            $test = implode(";", $slices);
+                            foreach($values as $key => $values) // seperate the values to be used as data
+                                $slices[] = strval($values).",$test[$key]"; // here we make slices by seperating the data
+                            $test = implode(";", $slices); // using implode we add ; to seperate all of our data into readble chunks for chartjs
                             ?>
                             <?php
                                 $values1 = array();
                                 $test1 = array();
                                 
-                                while($rows1 = mysqli_fetch_assoc($deviceChartSet))
+                                while($rows1 = mysqli_fetch_assoc($deviceChartSet)) // using the sql query from earlier we get the 
                                 {
-                                    $values1[] = $rows1['d_id'];
-                                    $test1[] = $rows1['COUNT(*)'];
+                                    $values1[] = $rows1['d_id']; // get the devices 
+                                    $test1[] = $rows1['COUNT(*)']; // get the count of how many times that device shows up
                                 }
                                 $slices1 = array();
-                                foreach($values1 as $key1 => $values1)
+                                foreach($values1 as $key1 => $values1) // seperate that data for chartjs
                                     $slices1[] = strval($values1).",$test1[$key1]";
                                 $test1 = implode(";", $slices1);
                             ?>
+                            <!-- Here we want to render both of our charts using the data we've received with php. Using echo we can send that data to the functions. --> 
                             <body  onload='renderChart("<?php echo $test?>","<?php echo "Top Employees" ?>"), renderChart1("<?php echo $test1?>","<?php echo "Top Devices" ?>")'>
                             <canvas id="myChart" ></canvas>
                             <!-- check library for external calls -->
                             </body>
                             <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.js"></script>
+                            <script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
+                            <script>
+                                $.ajax({
+                                    type: 'POST',
+                                    url: 'query.php'
+                                    data: {json: JSON.stringify(json_data)},
+                                    dataType: 'json'
+                                })
+                            </script>
                         </div>
                                  
                     </div>
@@ -557,7 +576,7 @@ function advanceNum($i, $str){
                                             
                                             if ($staff && $staff->getRoleID() >= 10){ 
                                                 ?>
-                                                    <div>
+                                                    
                                                     <style >
                                                         .loader {
                                                         border: 3px solid #f3f3f3; /* Light grey */
@@ -569,7 +588,8 @@ function advanceNum($i, $str){
                                                         }
     
                                                         @keyframes spin {
-                                                        0% { transform: rotate(0deg); }
+                                                        0% { transform: rotate(0deg);}
+                                                        50% { transform: rotate(180deg); }
                                                         100% { transform: rotate(360deg); }
                                                         }
                                                         /* The alert message box */
@@ -590,6 +610,19 @@ function advanceNum($i, $str){
                                                           line-height: 20px;
                                                           cursor: pointer;
                                                           transition: 0.3s;
+                                                          -webkit-animation: flash linear 1s infinite;
+                                                          animation: flash linear 1s infinite;
+                                                        }
+                                                    
+                                                        @-webkit-keyframes flash {
+                                                            0% { opacity: 1; } 
+                                                            50% { opacity: .1; } 
+                                                            100% { opacity: 1; }
+                                                        }
+                                                        @keyframes flash {
+                                                            0% { opacity: 1; } 
+                                                            50% { opacity: .1; } 
+                                                            100% { opacity: 1; }
                                                         }
 
                                                         /* When moving the mouse over the close button */
@@ -597,7 +630,7 @@ function advanceNum($i, $str){
                                                           color: black;
                                                         }
                                                     </style>
-                                                    </div>
+                                                                                              
                                                     <?php }
                                             
                                             
@@ -605,13 +638,20 @@ function advanceNum($i, $str){
                                             sscanf($str_time, "%d:%d:%d", $hours, $minutes, $seconds);
                                             $time_seconds = $hours * 3600 + $minutes * 60 + $seconds- (time() - strtotime($row["t_start"]) ) + $sv["grace_period"];
                                             array_push($device_array, array("t".$row["trans_id"], $time_seconds));
+                                                
                                             if ($time_seconds <= 0 ){
                                                 echo("<td align='center' style=\"color:red\"><div id=\"t$row[trans_id]\">$row[est_time]<div class='loader'></div></div>");
-                                                echo '<span class="closebtn" onclick="this.style.display=\'none\';">ALERT&times;</span>';
-
-                                                } else {
+                                                echo '<span class="closebtn" onclick="this.style.display=\'none\';">ALERT  &times; </span>';
+                                                ?>
+                                                <?php
+                                            } else if($time_seconds >=0 && $time_seconds<=125)
+                                                {
+                                                    echo("<td id='result' align='center' style=\"color:orange\" onload=\"test\"><div id=\"t$row[trans_id]\">$row[est_time]<div class='loader'></div></div>");
+                                                    echo '<div class="loader">';
+                                                }
+                                                else {
                                                 echo("<td align='center' ><div id=\"t$row[trans_id]\">$row[est_time]<div class='loader'></div></div>");
-                                                echo '<div class="loader">';
+                                                echo '<div class="loader">'; 
                                             };
 
                                         } else 
@@ -888,8 +928,11 @@ include_once ($_SERVER['DOCUMENT_ROOT'].'/pages/footer.php');
                 },
             }
         });
+        
+       
     }
-    
+     
+
     function renderChart1(data, htitle) {
         var labels = []; // the labels the pie chart
         var backgroundColor = [];

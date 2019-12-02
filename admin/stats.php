@@ -415,11 +415,56 @@ function get_selections($table) {
 					</div>
 					
 					<div style='padding:16px;'>
-						<body onload='renderChart("<?php echo $data['pie'] ?>","<?php echo $selected_val ?>"), hideChart()'>
-						<button class="btn btn-default" onclick="myFunction(), hideElement()" id="btn1" style="display: none;">Hide Chart</button>
-                	<script>
+						<select class="btn btn-default" id='drop'>
+							<option value='doughnut'>Doughnnut</option>
+							<option value='line'>Line</option>
+							<option value='bar'>Bar</option>
+						</select> 
+						<!-- This is the code for creating and hiding the chart we want to show -->
+						<body onload='renderChart("<?php echo $data['pie'] ?>","<?php echo $selected_val ?>", "<?php echo 'doughnut'?>"), hideChart()'> <!-- When the page loads
+							go ahed and send thet information to the function to render out chart -->
+						<button class="btn btn-default" onclick="myFunction(), hideElement()" id="btn1" style="display: none;">Hide Chart</button> 
+						<!-- this is the button I used to hide the chart thta will also show the chart using the code below -->
+                	<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+                	<script type="text/javascript">
+                		var myChart;
+                		
+						$("#drop").change(function () {
+							change(this.value)
+					        
+					    });
+
+						
+						function change(newType) {
+						  var ctx = document.getElementById("myChart").getContext("2d");
+
+						  // Remove the old chart and all its event handles
+						  if (myChart) {
+						    myChart.destroy();
+						  }
+						  if (newType == 'line')
+						  {
+						  	renderChart("<?php echo $data['pie'] ?>","<?php echo $selected_val ?>", "<?php echo 'line'?>");
+						  	//hideChart();
+						  }
+						  else if(newType == 'bar')
+						  {
+						  	renderChart("<?php echo $data['pie'] ?>","<?php echo $selected_val ?>", "<?php echo 'bar'?>");
+						  	//hideChart();
+						  }
+						  else if(newType == 'doughnut')
+						  {
+						  	renderChart("<?php echo $data['pie'] ?>","<?php echo $selected_val ?>", "<?php echo 'doughnut'?>");
+						  }
+						  
+						  
+						  // Chart.js modifies the object you pass in. Pass a copy of the object so we can use the original object later
+						  
+						};
+
                 		function myFunction()
                 		{
+                			// This function tracks the state of the text to be changed when the chart is shown or hidden
                     		var change = document.getElementById("btn1");
                     		if(change.innerHTML=="Hide Chart")
                     		{
@@ -431,6 +476,7 @@ function get_selections($table) {
                     		} 
                 		}
                 		function hideElement() {
+                			// This function decides whether or not to hide the div the chart is in
         					var x = document.getElementById("myChart"); // this gets the chart
         					
         
@@ -441,6 +487,7 @@ function get_selections($table) {
         					}
     						}
     					function hideChart() {
+    						//function hides the chart
         					var x = document.getElementById("btn1"); // this gets the chart
         					
         
@@ -449,7 +496,7 @@ function get_selections($table) {
         					} else {
             				x.style.display = "none"; // else hide it
         					}
-    						}
+    					}
 				</script>
  
         				<canvas id="myChart"></canvas>
@@ -606,7 +653,7 @@ function get_selections($table) {
 	// leads can see how many printers are out of service vs yelloow vs green 
 	// staff id on dashbaord add extra column
 	// tooltips for hiding visualization portions
-	function renderChart(data, name) {
+	function renderChart(data, name, type) {
     	var labels = []; // the labels the pie chart
     	var backgroundColor = [];
     	var ctx = document.getElementById("myChart").getContext('2d'); //finds the element in the html to send this to
@@ -638,8 +685,8 @@ function get_selections($table) {
         }
 
        	// Data structure readable by chart.js
-    	var myChart = new Chart(ctx, {
-        	type: 'doughnut', // this is the type of chart we wish to display
+    	myChart = new Chart(ctx, {
+        	type: type, // this is the type of chart we wish to display
         	data: {
         		// these are the visual data types that chart.js will use to construct our data
             	labels: labels,
